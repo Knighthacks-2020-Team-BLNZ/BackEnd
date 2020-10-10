@@ -2,7 +2,7 @@ import requests
 
 url = "https://twinword-word-associations-v1.p.rapidapi.com/associations/"
 
-querystring = {"entry":"honest"}
+querystring = {"entry":"banana"}
 
 headers = {
     'x-rapidapi-host': "twinword-word-associations-v1.p.rapidapi.com",
