@@ -1,8 +1,13 @@
 #to be deleted, testing NLP functions only and is not part of django 
-#requires pip install spacy, python -m spacy download en_core_web_sm
+
+#README.md 
+# Because the models can be very large and consist mostly of binary data, the files will not be present in this repository.
+# Please perform the following: 
+# pip install spacy
+# python -m spacy download en_core_web_md
 
 import spacy
-nlp = spacy.load('en_core_web_sm')
+nlp = spacy.load('en_core_web_md') 
 doc = nlp(u'Mark and John are sincere employees at Google. Joseph likes to go fishing. Wendy is very hardworking and kind. ')
 noun_adj_pairs = []
 for i,token in enumerate(doc):
