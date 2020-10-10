@@ -45,10 +45,10 @@ def sendToDatabase (person, form):
             with connection.cursor() as cursor:
                 sql = "INSERT INTO entries (studentName, personalityType, description) values (\"{}\", \"{}\", \"{}\");".format(form.data['user_name'], form.data['user_personality'], form.data['user_writeup'])
                 cursor.execute(sql)
-                sql = "SELECT * FROM entries"
-                cursor.execute(sql)
-                result = cursor.fetchall()
-                print(result)
+                # sql = "SELECT * FROM entries"
+                # cursor.execute(sql)
+                # result = cursor.fetchall()
+                # print(result)
         finally:
             connection.commit()
             connection.close()
@@ -62,10 +62,10 @@ def sendToDatabase (person, form):
             with connection.cursor() as cursor:
                 sql = "INSERT INTO entries (tutorName, personalityType, description) values (\"{}\", \"{}\", \"{}\");".format(form.data['user_name'], form.data['user_personality'], form.data['user_writeup'])
                 cursor.execute(sql)
-                sql = "SELECT * FROM entries"
-                cursor.execute(sql)
-                result = cursor.fetchall()
-                print(result)
+                # sql = "SELECT * FROM entries"
+                # cursor.execute(sql)
+                # result = cursor.fetchall()
+                # print(result)
         finally:
             connection.commit()
             connection.close()
@@ -97,22 +97,78 @@ def matchPeople(person, form):
     
     preferred = []
     alright = []
+
+    matches = []
     if person == 1: # Student
+        connection = pymysql.connect(host='127.0.0.1',
+                                    user='root',
+                                    password='ReLearn2015',
+                                    db='Tutors')
+
         results = [key for key in matrix if form.data['user_personality'] in key]
         for res in results:
             if matrix.get(res) == 1:
-                if not (res.replace(form.data['user_personality'], "") in preferred):
-                
+                if not (res.replace(form.data['user_personality'], "") in preferred) and not (len(res.replace(form.data['user_personality'], "")) == 0):
                     preferred.append(res.replace(form.data['user_personality'], ""))
+                if len(res.replace(form.data['user_personality'], "")) == 0:
+                    preferred.append(form.data['user_personality'])
 
             elif matrix.get(res) == 0.5:
 
-                if not (res.replace(form.data['user_personality'], "") in alright):
-                
+                if not (res.replace(form.data['user_personality'], "") in alright) and not (len(res.replace(form.data['user_personality'], "")) == 0):
                     alright.append(res.replace(form.data['user_personality'], ""))
-
+                if len(res.replace(form.data['user_personality'], "")) == 0:
+                    alright.append(form.data['user_personality'])
         
+        try:
+            with connection.cursor() as cursor:
+                sql = "SELECT * FROM entries WHERE " #personalityType = \"" + form.data['user_personality'] + "\""
+                for p in preferred:
+                    sql += "personalityType = \"" + p + "\""
+                    if preferred.index(p) != (len(preferred) - 1):
+                        sql += " OR "
+                
+                cursor.execute(sql)
+                result = cursor.fetchall()
+                print(result)
+
+                #return result
+        finally:
+            connection.close()
 
     elif person == 2: # Tutor
+        connection = pymysql.connect(host='127.0.0.1',
+                                    user='root',
+                                    password='ReLearn2015',
+                                    db='Students')
 
         results = [key for key in matrix if form.data['user_personality'] in key]
+        for res in results:
+            if matrix.get(res) == 1:
+                if not (res.replace(form.data['user_personality'], "") in preferred) and not (len(res.replace(form.data['user_personality'], "")) == 0):
+                    preferred.append(res.replace(form.data['user_personality'], ""))
+                if len(res.replace(form.data['user_personality'], "")) == 0:
+                    preferred.append(form.data['user_personality'])
+
+            elif matrix.get(res) == 0.5:
+
+                if not (res.replace(form.data['user_personality'], "") in alright) and not (len(res.replace(form.data['user_personality'], "")) == 0):
+                    alright.append(res.replace(form.data['user_personality'], ""))
+                if len(res.replace(form.data['user_personality'], "")) == 0:
+                    alright.append(form.data['user_personality'])
+        
+        try:
+            with connection.cursor() as cursor:
+                sql = "SELECT * FROM entries WHERE " #personalityType = \"" + form.data['user_personality'] + "\""
+                for p in preferred:
+                    sql += "personalityType = \"" + p + "\""
+                    if preferred.index(p) != (len(preferred) - 1):
+                        sql += " OR "
+                
+                cursor.execute(sql)
+                result = cursor.fetchall()
+                print(result)
+
+                #return result
+        finally:
+            connection.close()
