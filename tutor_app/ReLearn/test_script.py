@@ -2,7 +2,24 @@
 #requires pip install spacy, python -m spacy download en_core_web_sm
 
 import spacy
-nlp = spacy.load('en_core_web_sm')
+import pymysql
+
+connection = pymysql.connect(host='127.0.0.1',
+                             user='root',
+                             password='ReLearn2015',
+                             db='Tutors')
+
+try:
+    with connection.cursor() as cursor:
+        # Read a single record
+        sql = "SELECT * FROM entries"
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        print(result)
+finally:
+    connection.close()
+
+nlp = spacy.load('en_core_web_md')
 doc = nlp(u'Mark and John are sincere employees at Google. Joseph likes to go fishing. Wendy is very hardworking and kind. ')
 noun_adj_pairs = []
 for i,token in enumerate(doc):
@@ -15,11 +32,11 @@ for i,token in enumerate(doc):
 print(noun_adj_pairs)
 
 
-student = nlp("I am looking for a patient tutor")
-t1 = nlp("I am a patient tutor")
+student = nlp("I am looking for a patient tutor. They should also be honest and direct.")
+t1 = nlp("I am a patient tutor. I like to think I speak honestly and directly to my students.")
 t2 = nlp("I am a creative tutor")
-t3 = nlp("I am an efficient tutor")
+t3 = nlp("I am straightforward and transparent. I am an efficient tutor.")
 
-print(student.similarity(t1)) #output = 0.8102488775334881
-print(student.similarity(t2)) #output = 0.786925031953063
-print(student.similarity(t3)) #output = 0.7317013896252067
+print(student.similarity(t1)) 
+print(student.similarity(t2)) 
+print(student.similarity(t3)) 
