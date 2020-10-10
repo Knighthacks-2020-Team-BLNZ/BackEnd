@@ -7,9 +7,6 @@
 # python -m spacy download en_core_web_md
 
 import spacy
-<<<<<<< HEAD
-nlp = spacy.load('en_core_web_md') 
-=======
 import pymysql
 
 connection = pymysql.connect(host='127.0.0.1',
@@ -28,7 +25,6 @@ finally:
     connection.close()
 
 nlp = spacy.load('en_core_web_md')
->>>>>>> 9380d0c2d88a966d03e36d2158b6cc3e1665f4d5
 doc = nlp(u'Mark and John are sincere employees at Google. Joseph likes to go fishing. Wendy is very hardworking and kind. ')
 noun_adj_pairs = []
 for i,token in enumerate(doc):
