@@ -2,10 +2,12 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.http import HttpResponse
 
+from ReLearn.forms import UserSearchForm
 from ReLearn.forms import SignupForm
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 import pymysql
+import json
 
 def account(request):
   return JsonResponse(
@@ -27,12 +29,23 @@ def signup(request):
         if form.is_valid():
             # insertdata processing code
             # and redirect to a new URL
-            #sendToDatabase(int(form.data['user_type']), form)
-            matchPeople(int(form.data['user_type']), form)
+            sendToDatabase(int(form.data['user_type']), form)
             return HttpResponseRedirect('/thanks/')
     else:
         form = SignupForm()
     return render(request, 'signup.html', {'form': form})
+
+def getusers(request):
+    if request.method == 'POST':
+        form = UserSearchForm(request.POST)
+        if form.is_valid():
+            # insertdata processing code
+            # and redirect to a new URL
+            jsonRes = matchPeople(int(form.data['user_type']), form)
+            return JsonResponse(jsonRes)
+    else:
+        form = UserSearchForm()
+    return render(request, 'findusers.html', {'form': form})
 
 def sendToDatabase (person, form):
     if person == 1:
@@ -98,8 +111,9 @@ def matchPeople(person, form):
     preferred = []
     alright = []
 
-    matches = []
-    if person == 1: # Student
+    jsonResults = {}
+
+    if person == 2: # Looking for Student
         connection = pymysql.connect(host='127.0.0.1',
                                     user='root',
                                     password='ReLearn2015',
@@ -113,12 +127,12 @@ def matchPeople(person, form):
                 if len(res.replace(form.data['user_personality'], "")) == 0:
                     preferred.append(form.data['user_personality'])
 
-            elif matrix.get(res) == 0.5:
+            # elif matrix.get(res) == 0.5:
 
-                if not (res.replace(form.data['user_personality'], "") in alright) and not (len(res.replace(form.data['user_personality'], "")) == 0):
-                    alright.append(res.replace(form.data['user_personality'], ""))
-                if len(res.replace(form.data['user_personality'], "")) == 0:
-                    alright.append(form.data['user_personality'])
+            #     if not (res.replace(form.data['user_personality'], "") in alright) and not (len(res.replace(form.data['user_personality'], "")) == 0):
+            #         alright.append(res.replace(form.data['user_personality'], ""))
+            #     if len(res.replace(form.data['user_personality'], "")) == 0:
+            #         alright.append(form.data['user_personality'])
         
         try:
             with connection.cursor() as cursor:
@@ -130,13 +144,18 @@ def matchPeople(person, form):
                 
                 cursor.execute(sql)
                 result = cursor.fetchall()
-                print(result)
+                student = 0
+                for r in result:
+                    name, mb, desc, id = r
+                    pDict = {"user_name": name, "user_personality": mb, "user_writeup": desc}
+                    jsonResults[student] = pDict
+                    student += 1
 
-                #return result
+                return jsonResults
         finally:
             connection.close()
 
-    elif person == 2: # Tutor
+    elif person == 1: # Looking for Tutor
         connection = pymysql.connect(host='127.0.0.1',
                                     user='root',
                                     password='ReLearn2015',
@@ -150,12 +169,12 @@ def matchPeople(person, form):
                 if len(res.replace(form.data['user_personality'], "")) == 0:
                     preferred.append(form.data['user_personality'])
 
-            elif matrix.get(res) == 0.5:
+            # elif matrix.get(res) == 0.5:
 
-                if not (res.replace(form.data['user_personality'], "") in alright) and not (len(res.replace(form.data['user_personality'], "")) == 0):
-                    alright.append(res.replace(form.data['user_personality'], ""))
-                if len(res.replace(form.data['user_personality'], "")) == 0:
-                    alright.append(form.data['user_personality'])
+            #     if not (res.replace(form.data['user_personality'], "") in alright) and not (len(res.replace(form.data['user_personality'], "")) == 0):
+            #         alright.append(res.replace(form.data['user_personality'], ""))
+            #     if len(res.replace(form.data['user_personality'], "")) == 0:
+            #         alright.append(form.data['user_personality'])
         
         try:
             with connection.cursor() as cursor:
@@ -167,8 +186,13 @@ def matchPeople(person, form):
                 
                 cursor.execute(sql)
                 result = cursor.fetchall()
-                print(result)
+                student = 0
+                for r in result:
+                    name, mb, desc, id = r
+                    pDict = {"user_name": name, "user_personality": mb, "user_writeup": desc}
+                    jsonResults[student] = pDict
+                    student += 1
 
-                #return result
+                return jsonResults
         finally:
             connection.close()

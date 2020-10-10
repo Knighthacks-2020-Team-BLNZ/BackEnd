@@ -24,6 +24,10 @@ personality_choices = (
     ("ENTJ", "Frank, decisive, well-informed")
 )
 
+class UserSearchForm(forms.Form):
+    user_type = forms.ChoiceField(label='Looking for', choices= user_choices)
+    user_personality = forms.ChoiceField(label='Personality', choices= personality_choices)
+    
 class SignupForm(forms.Form):
     user_name = forms.CharField(label='Name', max_length=100)
     user_type = forms.ChoiceField(label='Profile', choices= user_choices)
