@@ -18,6 +18,25 @@ import json
 import spacy
 import collections
 
+@api_view(['GET', 'POST'])
+def api_root(request):
+    if request.method == 'GET':
+        json_output = {"0": {"user_name": "Ricohard Elisa", "user_personality": "ENFJ", "user_writeup": "I am great at coaching people to lead and speak with others! Whether it's for school or work, I will give a student the boost they need.", "user_subject": "English"}, "1": {"user_name": "Fen Tevye", "user_personality": "ESFJ", "user_writeup": "I am a great tutor for making new friends! Great for regular life, public speaking, and networking. Can help with job searching too!", "user_subject": "English"}, "2": {"user_name": "Avgust Matthia", "user_personality": "INFP", "user_writeup": "Your one stop shop for all things reading and poetry. Welcome to anyone who needs help! Any bullying though is not allowed.", "user_subject": "English"}, "3": {"user_name": "Aleida M\u00e1rton", "user_personality": "INTJ", "user_writeup": "I am great at helping people think of new ideas and plan them out!", "user_subject": "English"}} #query function to be defined here, returns json list to be sent to frontend 
+        #this space is for processing of the json_output to ensure that has been sorted  
+        return Response(data=json_output)
+    elif request.method == 'POST':
+
+        json_input = UserSearchForm(request.POST)
+        json_output = None
+        #this space is for processing the json form from frontend
+        print("hi")
+        print(request.POST.get('user_personality'))
+        if json_input.is_valid():
+            print("based")
+            #this space is for create operation in google cloud database
+            json_output = matchPeople(int(json_input.data['user_type']), json_input)
+        return Response(data=json_output)
+    return Response(data={"hello":"there"})
 
 def helloworld(request):
     return HttpResponse("Hello, world. This is a placeholder page for our backend server.")
@@ -38,6 +57,7 @@ def signup(request):
 def getusers(request):
     if request.method == 'POST':
         form = UserSearchForm(request.POST)
+        print(request.POST.get('user_type', default = False))
         if form.is_valid():
             # insertdata processing code
             # and redirect to a new URL
@@ -122,13 +142,34 @@ def matchPeople(person, form):
                                     password='ReLearn2015',
                                     db='Students')
 
+        results = [key for key in matrix if form.data['user_subject'] in key]
+        try:
+            with connection.cursor() as cursor:
+                sql = "SELECT * FROM entries WHERE Subject = \"" + form.data['user_subject'] + "\""
+                
+                cursor.execute(sql)
+                result = cursor.fetchall()
+                student = 0
+                for r in result:
+                    name, mb, desc, id, subject = r
+                    pDict = {"user_name": name, "user_personality": mb, "user_writeup": desc, "user_subject": subject}
+                    subjectResults[student] = pDict
+                    student += 1
+                    #print(pDict)
+         
+        finally:
+            connection.close()
+ 
+ 
         results = [key for key in matrix if form.data['user_personality'] in key]
-        for res in results:
-            if matrix.get(res) == 1:
-                if not (res.replace(form.data['user_personality'], "") in preferred) and not (len(res.replace(form.data['user_personality'], "")) == 0):
-                    preferred.append(res.replace(form.data['user_personality'], ""))
-                if len(res.replace(form.data['user_personality'], "")) == 0:
-                    preferred.append(form.data['user_personality'])
+        #print(results)
+        for student, info in subjectResults.items():
+            for res in results:
+                #print(info['user_subject'])
+                if (matrix.get(res) == 1 or matrix.get(res) == 0.5) and info['user_personality'] in res and not info in matrixResults:
+                    #print(res)
+                    #print(info)
+                    matrixResults.append(info)
 
             # elif matrix.get(res) == 0.5:
 
@@ -137,26 +178,41 @@ def matchPeople(person, form):
             #     if len(res.replace(form.data['user_personality'], "")) == 0:
             #         alright.append(form.data['user_personality'])
         
-        try:
-            with connection.cursor() as cursor:
-                sql = "SELECT * FROM entries WHERE " #personalityType = \"" + form.data['user_personality'] + "\""
-                for p in preferred:
-                    sql += "personalityType = \"" + p + "\""
-                    if preferred.index(p) != (len(preferred) - 1):
-                        sql += " OR "
+        # try:
+        #     with connection.cursor() as cursor:
+        #         sql = "SELECT * FROM entries WHERE " #personalityType = \"" + form.data['user_personality'] + "\""
+        #         for p in preferred:
+        #             sql += "personalityType = \"" + p + "\""
+        #             if preferred.index(p) != (len(preferred) - 1):
+        #                 sql += " OR "
                 
-                cursor.execute(sql)
-                result = cursor.fetchall()
-                student = 0
-                for r in result:
-                    name, mb, desc, id = r
-                    pDict = {"user_name": name, "user_personality": mb, "user_writeup": desc}
-                    subjectResults[student] = pDict
-                    student += 1
+        #         cursor.execute(sql)
+        #         result = cursor.fetchall()
+        #         student = 0
+        #         for r in result:
+        #             name, mb, desc, id = r
+        #             pDict = {"user_name": name, "user_personality": mb, "user_writeup": desc}
+        #             jsonResults[student] = pDict
+        #             student += 1
 
-                return subjectResults
-        finally:
-            connection.close()
+
+        nlp = spacy.load('en_core_web_md')
+        student = nlp(form.data['user_writeup'])
+        val = 0
+        for info in matrixResults:
+            #print(info['user_writeup'])
+            temp = nlp(info['user_writeup'])
+            a = student.similarity(temp)
+            spacyResults[a] = info
+            
+        oSpacy = collections.OrderedDict(sorted(spacyResults.items(), reverse = True))
+
+        for space, info in oSpacy.items():
+            #print(info)
+            jsonResults[val] = info
+            val += 1
+
+        return jsonResults
 
     elif person == 2: # Looking for Tutor
         connection = pymysql.connect(host='127.0.0.1',

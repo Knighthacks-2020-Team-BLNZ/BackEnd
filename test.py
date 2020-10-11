@@ -1,15 +1,10 @@
 import requests
 
-url = "http://127.0.0.1:8000/findusers/"
+url = "http://127.0.0.1:8000/looking/"
 
-querystring = "csrfmiddlewaretoken=sWg50wAuUNt7PXYfe6VjkAh6dpRHuweo7IFgaEFIFprvzRWq7vaBrFFPCX2hcgYM&user_type=1&user_personality=ISTJ"
+querystring = "user_type=2&user_subject=Physics&user_personality=ENFP&user_writeup=I+just+want+someone+to+teach+me+physids"
+heads = {'content-type':'application/x-www-form-urlencoded'}
 
-# headers = {
-#     'x-rapidapi-host': "twinword-word-associations-v1.p.rapidapi.com",
-#     'x-rapidapi-key': "2d880394dfmsh177cb8bde63f6e3p15ed44jsnf2caf75f146b"
-#     }
+response = requests.request('POST',url, data=querystring, headers=heads)
+print(response.content)
 
-response = requests.request("POST", url, params=querystring)
-print(response.text)
-#listOfWords = response.text.partition("associations\":\"")[2].partition("\",\"associations_array")[0].split(", ")
-#print(listOfWords)
