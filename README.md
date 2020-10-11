@@ -21,8 +21,8 @@ Team BLNZ (creators of the ReLearn) were motivated to create a solution to the t
 
 ## Note
 
-
 This repository serves as the backend as well as the connection to the google cloud database. 
+
 ## How the Algorithm Functions
 The algorithm first takes the request from the front end and parses out the requested user's type, whether it be for student or tutor.
 Then, the algorithm takes the subject the student/tutor, and finds the tutor/student in the Google SQL database who has the 
@@ -50,6 +50,7 @@ Install the repository in a selected folder of choice. Next, use the runserver c
 ```
 git clone https://github.com/Knighthacks-2020-Team-BLNZ/BackEnd.git
 cd tutor_app
+./cloud_sql_proxy -instances=<GOOGLE CLOUD SQL INSTANCE>=tcp:3306
 python manage.py runserver 
 ```
 
