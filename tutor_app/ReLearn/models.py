@@ -2,7 +2,6 @@ from django.db import models
 
 # Create your models here.
 
-
 #testing, sample model to be deleted 
 class ReLearn(models.Model):
   title = models.CharField(max_length=120)

@@ -2,7 +2,9 @@
 
 from django.db import migrations
 
-
+def create_data(apps, schema_editor):
+    ReLearn = apps.get_model('user', 'ReLearn')
+    ReLearn(user_name="TEST USER", user_type="1", user_personality="XXXX", user_writeup = "TEST DESCRIPTION")
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -14,4 +16,6 @@ class Migration(migrations.Migration):
             old_name='Todo',
             new_name='ReLearn',
         ),
+
+        migrations.RunPython(create_data),
     ]
