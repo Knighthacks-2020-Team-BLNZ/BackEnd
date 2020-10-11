@@ -17,19 +17,11 @@ import pymysql
 import json
 import spacy
 import collections
-def account(request):
-  return JsonResponse(
-      {
-        "name": "testuser",
-        "type": "student"
-        }
-  )
+
 
 def helloworld(request):
-    return HttpResponse("Hello, world. This is a test view - Basic http response.")
+    return HttpResponse("Hello, world. This is a placeholder page for our backend server.")
 
-def thanks(request):
-    return HttpResponse("Thank you for adding to our database!")
 
 def signup(request):
     if request.method == 'POST':
