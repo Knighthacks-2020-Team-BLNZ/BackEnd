@@ -9,6 +9,8 @@ Team BLNZ (creators of the ReLearn) were motivated to create a solution to the t
 
 ## Tech/framework used
 
+![alt text](https://miro.medium.com/max/804/1*lU33rCWoiW31simf-nWUVQ.png)
+
 <b>Built with</b>
 
 <ul>
