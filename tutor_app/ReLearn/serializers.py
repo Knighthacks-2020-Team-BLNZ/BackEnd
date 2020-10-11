@@ -5,4 +5,4 @@ class ReLearnSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ReLearn
-        fields = ('user_name', 'user_type', 'user_personality', 'user_writeup')
+        fields = ('user_name', 'user_type', 'user_subject', 'user_personality', 'user_writeup')
