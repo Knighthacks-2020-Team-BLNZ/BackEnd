@@ -21,8 +21,16 @@ Team BLNZ (creators of the ReLearn) were motivated to create a solution to the t
 
 ## Note
 
-This repository serves as the backend as well as the connection to the google cloud database. 
 
+This repository serves as the backend as well as the connection to the google cloud database. 
+## How the Algorithm Functions
+The algorithm first takes the request from the front end and parses out the requested user's type, whether it be for student or tutor.
+Then, the algorithm takes the subject the student/tutor, and finds the tutor/student in the Google SQL database who has the 
+matching subject.
+The algorithm then weeds out anyone whose personalities would not match up well, according to the Myers Briggs Compatibility Chart.
+Finally, we use Spacy, a free software library for natural language processing, to compare the description of the student/tutor and the
+found tutors/students, and see who matches best. They are then organized by how similar their descriptions are, and the algorithm returns
+as a json format to whoever requested.
 
 ## Installation
 Install the necessary dependencies using pip/python command. 
@@ -33,6 +41,7 @@ pip install pymysql
 pip install django-rest-framework
 python -m spacy download en_core_web_md
 ```
+You will also need to install Google Cloud SDK in order to contact the Google SQL database, <a href="https://cloud.google.com/sql/docs/mysql/connect-external-app">which installation instructions can be found here.</a> You will want to place it in the outer tutor_app folder, and not the inner folder.
 
 Install the repository in a selected folder of choice. Next, use the runserver command (django manage.py runserver) to deploy the application. The list of commands is documented in the code snippet below.
 
