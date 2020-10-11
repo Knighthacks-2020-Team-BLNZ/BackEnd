@@ -15,7 +15,8 @@ from .models import ReLearn
 
 import pymysql
 import json
-
+import spacy
+import collections
 def account(request):
   return JsonResponse(
       {
@@ -48,7 +49,7 @@ def getusers(request):
         if form.is_valid():
             # insertdata processing code
             # and redirect to a new URL
-            print(json.dumps(form.data))
+            #print(json.dumps(form.data))
             jsonRes = matchPeople(int(form.data['user_type']), form)
             return JsonResponse(jsonRes)
     else:
@@ -119,51 +120,11 @@ def matchPeople(person, form):
     preferred = []
     alright = []
 
+    subjectResults = {}
+    matrixResults = []
+    spacyResults = {}
     jsonResults = {}
-
-    if person == 2: # Looking for Student
-        connection = pymysql.connect(host='127.0.0.1',
-                                    user='root',
-                                    password='ReLearn2015',
-                                    db='Tutors')
-
-        results = [key for key in matrix if form.data['user_personality'] in key]
-        for res in results:
-            if matrix.get(res) == 1:
-                if not (res.replace(form.data['user_personality'], "") in preferred) and not (len(res.replace(form.data['user_personality'], "")) == 0):
-                    preferred.append(res.replace(form.data['user_personality'], ""))
-                if len(res.replace(form.data['user_personality'], "")) == 0:
-                    preferred.append(form.data['user_personality'])
-
-            # elif matrix.get(res) == 0.5:
-
-            #     if not (res.replace(form.data['user_personality'], "") in alright) and not (len(res.replace(form.data['user_personality'], "")) == 0):
-            #         alright.append(res.replace(form.data['user_personality'], ""))
-            #     if len(res.replace(form.data['user_personality'], "")) == 0:
-            #         alright.append(form.data['user_personality'])
-        
-        try:
-            with connection.cursor() as cursor:
-                sql = "SELECT * FROM entries WHERE " #personalityType = \"" + form.data['user_personality'] + "\""
-                for p in preferred:
-                    sql += "personalityType = \"" + p + "\""
-                    if preferred.index(p) != (len(preferred) - 1):
-                        sql += " OR "
-                
-                cursor.execute(sql)
-                result = cursor.fetchall()
-                student = 0
-                for r in result:
-                    name, mb, desc, id = r
-                    pDict = {"user_name": name, "user_personality": mb, "user_writeup": desc}
-                    jsonResults[student] = pDict
-                    student += 1
-
-                return jsonResults
-        finally:
-            connection.close()
-
-    elif person == 1: # Looking for Tutor
+    if person == 1: # Looking for Student
         connection = pymysql.connect(host='127.0.0.1',
                                     user='root',
                                     password='ReLearn2015',
@@ -198,9 +159,87 @@ def matchPeople(person, form):
                 for r in result:
                     name, mb, desc, id = r
                     pDict = {"user_name": name, "user_personality": mb, "user_writeup": desc}
-                    jsonResults[student] = pDict
+                    subjectResults[student] = pDict
                     student += 1
 
-                return jsonResults
+                return subjectResults
         finally:
             connection.close()
+
+    elif person == 2: # Looking for Tutor
+        connection = pymysql.connect(host='127.0.0.1',
+                                    user='root',
+                                    password='ReLearn2015',
+                                    db='Tutors')
+
+        results = [key for key in matrix if form.data['user_subject'] in key]
+        try:
+            with connection.cursor() as cursor:
+                sql = "SELECT * FROM entries WHERE Subject = \"" + form.data['user_subject'] + "\""
+                
+                cursor.execute(sql)
+                result = cursor.fetchall()
+                student = 0
+                for r in result:
+                    name, mb, desc, id, subject = r
+                    pDict = {"user_name": name, "user_personality": mb, "user_writeup": desc, "user_subject": subject}
+                    subjectResults[student] = pDict
+                    student += 1
+                    #print(pDict)
+         
+        finally:
+            connection.close()
+ 
+ 
+        results = [key for key in matrix if form.data['user_personality'] in key]
+        #print(results)
+        for student, info in subjectResults.items():
+            for res in results:
+                #print(info['user_subject'])
+                if (matrix.get(res) == 1 or matrix.get(res) == 0.5) and info['user_personality'] in res and not info in matrixResults:
+                    #print(res)
+                    #print(info)
+                    matrixResults.append(info)
+
+            # elif matrix.get(res) == 0.5:
+
+            #     if not (res.replace(form.data['user_personality'], "") in alright) and not (len(res.replace(form.data['user_personality'], "")) == 0):
+            #         alright.append(res.replace(form.data['user_personality'], ""))
+            #     if len(res.replace(form.data['user_personality'], "")) == 0:
+            #         alright.append(form.data['user_personality'])
+        
+        # try:
+        #     with connection.cursor() as cursor:
+        #         sql = "SELECT * FROM entries WHERE " #personalityType = \"" + form.data['user_personality'] + "\""
+        #         for p in preferred:
+        #             sql += "personalityType = \"" + p + "\""
+        #             if preferred.index(p) != (len(preferred) - 1):
+        #                 sql += " OR "
+                
+        #         cursor.execute(sql)
+        #         result = cursor.fetchall()
+        #         student = 0
+        #         for r in result:
+        #             name, mb, desc, id = r
+        #             pDict = {"user_name": name, "user_personality": mb, "user_writeup": desc}
+        #             jsonResults[student] = pDict
+        #             student += 1
+
+
+        nlp = spacy.load('en_core_web_md')
+        student = nlp(form.data['user_writeup'])
+        val = 0
+        for info in matrixResults:
+            #print(info['user_writeup'])
+            temp = nlp(info['user_writeup'])
+            a = student.similarity(temp)
+            spacyResults[a] = info
+            
+        oSpacy = collections.OrderedDict(sorted(spacyResults.items(), reverse = True))
+
+        for space, info in oSpacy.items():
+            #print(info)
+            jsonResults[val] = info
+            val += 1
+
+        return jsonResults
