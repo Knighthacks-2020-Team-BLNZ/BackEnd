@@ -16,7 +16,7 @@ Team BLNZ (creators of the ReLearn) were motivated to create a solution to the t
 <ul>
 <li>- [<a href="https://www.djangoproject.com/">Django</a>] - Web framework for the backend</li>
 <li>- [<a href="https://spacy.io/">spacy</a>] - Natural Language Processor</li>
-<li>- [<a href="https://cloud.google.com/products/databases">Google Cloud</a>] - Used as our primary database</li>
+<li>- [<a href="https://cloud.google.com/sql">Google Cloud</a>] - Used as our primary database</li>
 </ul>
 
 ## Note
