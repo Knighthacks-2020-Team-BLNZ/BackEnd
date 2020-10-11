@@ -12,7 +12,6 @@ from rest_framework.decorators import api_view
 from rest_framework import status
 
 from .models import ReLearn
-from .serializers import *
 
 import pymysql
 import json
@@ -31,7 +30,6 @@ def helloworld(request):
 def thanks(request):
     return HttpResponse("Thank you for adding to our database!")
 
-@api_view(['GET','POST'])
 def signup(request):
     if request.method == 'POST':
         form = SignupForm(request.POST)
@@ -44,14 +42,13 @@ def signup(request):
         form = SignupForm()
     return render(request, 'signup.html', {'form': form})
 
-@api_view(['GET','POST'])
 def getusers(request):
     if request.method == 'POST':
         form = UserSearchForm(request.POST)
         if form.is_valid():
             # insertdata processing code
             # and redirect to a new URL
-            print(form.data)
+            print(json.dumps(form.data))
             jsonRes = matchPeople(int(form.data['user_type']), form)
             return JsonResponse(jsonRes)
     else:
